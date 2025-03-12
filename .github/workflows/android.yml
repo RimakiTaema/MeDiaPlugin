@@ -61,7 +61,7 @@ jobs:
           git clone https://code.videolan.org/videolan/vlc-android.git
         fi
         cd vlc-android
-        buildsystem/compile.sh -l -a all -r
+        buildsystem/compile.sh -l -a arm64
         cd ..
 
     - name: Copy LibVLC output to app
