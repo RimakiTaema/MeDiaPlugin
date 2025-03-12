@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FFMPEG_PLUGIN_KEYSTORE_PASSWORD: ${{ secrets.FFMPEG_PLUGIN_KEYSTORE_PASSWORD }}
+      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
 
     steps:
     - uses: actions/checkout@v3
@@ -23,16 +25,24 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Setup Android SDK
-      uses: amyu/setup-android@v4
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install -y automake ant autopoint cmake build-essential libtool-bin pkg-config protobuf-compiler ragel subversion unzip git openjdk-11-jdk flex python3 wget nasm autogen patch ninja-build gettext
+
+    - name: Install Android Command Line Tools
+      run: |
+        mkdir -p $ANDROID_HOME/cmdline-tools
+        cd $ANDROID_HOME/cmdline-tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
+        unzip commandlinetools.zip
+        mv cmdline-tools latest
+        export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+        sdkmanager --sdk_root=$ANDROID_HOME --licenses
+        sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
     - name: Setup Android NDK
       uses: nttld/setup-ndk@v1.5.0
       with:
         ndk-version: r25c  # Adjust based on your requirements
-
-    - name: Install dependencies
-      run: sudo apt update && sudo apt install -y automake ant autopoint cmake build-essential libtool-bin pkg-config protobuf-compiler ragel subversion unzip git openjdk-11-jdk flex python3 wget nasm autogen patch ninja-build gettext
 
     - name: Cache VLC source
       uses: actions/cache@v3
