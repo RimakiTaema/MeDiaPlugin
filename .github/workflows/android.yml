@@ -42,8 +42,13 @@ jobs:
     - name: Setup Android NDK
       uses: nttld/setup-ndk@v1.5.0
       with:
-        ndk-version: r25c  # Adjust based on your requirements
-
+        ndk-version: r25c 
+        # Adjust based on your requirements
+    - name: Set environment variables for SDK & NDK
+      run: |
+        echo "ANDROID_SDK=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+        echo "ANDROID_NDK=$ANDROID_HOME/ndk" >> $GITHUB_ENV
+        
     - name: Cache VLC source
       uses: actions/cache@v3
       with:
