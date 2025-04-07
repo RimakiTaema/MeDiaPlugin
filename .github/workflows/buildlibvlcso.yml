@@ -1,0 +1,48 @@
+name: Build and Zip libVLC .so
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout VLC Android
+      uses: actions/checkout@v3
+      with:
+        repository: videolan/vlc-android
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y openjdk-11-jdk python3 cmake ninja-build gradle
+
+    - name: Set up Android SDK & NDK
+      uses: android-actions/setup-android@v3
+      with:
+        ndk-version: '25.2.9519653'
+
+    - name: Init VLC Project
+      run: ./gradlew init
+
+    - name: Build Native Libraries
+      run: |
+        cd libvlc
+        ./compile.sh
+
+    - name: Zip .so Files
+      run: |
+        mkdir -p output
+        cp -r libvlc/jni/libs output/libs
+        cd output
+        zip -r libvlc_native_libs.zip libs
+
+    - name: Upload Zipped .so
+      uses: actions/upload-artifact@v3
+      with:
+        name: libvlc-so-zip
+        path: output/libvlc_native_libs.zip
